@@ -4,55 +4,43 @@ import streamlit_authenticator as stauth
 
 st.set_page_config(page_title="Calcul Financier", layout="wide")
 
+# ✅ Mots de passe déjà hashés (générés avec stauth.Hasher en local)
+hashed_passwords = [
+    '$2b$12$5tWkDeCSboSHE7xMlSv0n.kR8.SNZDCLbrNOcqFMIr4nffWhpNIMu',  # motdepasse123
+    '$2b$12$KZucFyfuYYsODF5rRSsCUOj3Iv8j8TrGGNKn.d/IDu7nLgISsbU6W'   # monmdpsecret
+]
 
-
-# Données utilisateurs
-users = {
-    "primael": {"name": "Primael Botcazou", "password": "motdepasse123"},
-    "alice": {"name": "Alice Dupont", "password": "monmdpsecret"}
+# 📌 Credentials
+credentials = {
+    "usernames": {
+        "primael": {
+            "name": "Primael Botcazou",
+            "password": hashed_passwords[0]
+        },
+        "alice": {
+            "name": "Alice Dupont",
+            "password": hashed_passwords[1]
+        }
+    }
 }
 
-usernames = list(users.keys())
-names = [users[user]["name"] for user in usernames]
-passwords = [users[user]["password"] for user in usernames]
+cookie_expiry_days = 0.1
 
-hasher = stauth.Hasher(passwords)
-hashed_passwords = hasher.generate()
-
-
-
-
-
-# Construction des credentials avec les hashes
-credentials = {"usernames": {}}
-for i, username in enumerate(usernames):
-    credentials["usernames"][username] = {
-        "name": names[i],
-        "password": hashed_passwords[i]
-    }
-
-# Création de l'authentificateur
-cookie_expiry_days = 0.1 
-
+# 🔐 Authentification
 authenticator = stauth.Authenticate(
     credentials,
     "cookie_calcul_financier",
     "signature_key_123",
-    cookie_expiry_days=cookie_expiry_days)
+    cookie_expiry_days=cookie_expiry_days
+)
 
-authentication_status = None
-name = None 
-username = None 
-# Login sécurisést
-name, authentication_status, username = authenticator.login("main", "Connexion")
+authenticator.login("main", "Connexion")
 
-
-if authentication_status:
-    
+if authenticator.authentication_status:
+    name = authenticator.name
     st.write(f"Bienvenue {name} !")
     st.title("📊 Tableau Financier Automatisé")
 
-    # Sidebar - paramètres
     st.sidebar.header("Paramètres")
     taux_is = st.sidebar.radio("Taux d'IS", [0.25, 0.15])
 
@@ -64,9 +52,7 @@ if authentication_status:
         "Produits financiers", "Charges financières",
         "Résultat exceptionnel", "Réintégrations fiscales", "Deductions fiscales",
         "Participation Année N", "Participation Année N-1",
-        "Réductions IS",
-        "S",
-        "C"
+        "Réductions IS", "S", "C"
     ]
 
     df = pd.DataFrame(index=colonnes, columns=annees)
@@ -156,11 +142,10 @@ if authentication_status:
     resultats = calculs(df, taux_is)
     st.dataframe(resultats.style.format("{:.2f}"), height=600, use_container_width=True)
 
-    # Bouton de déconnexion dans la sidebar
     authenticator.logout("Déconnexion", "sidebar")
 
-elif authentication_status == False:
+elif authenticator.authentication_status is False:
     st.error("Nom d’utilisateur ou mot de passe incorrect")
 
-elif authentication_status is None:
+elif authenticator.authentication_status is None:
     st.warning("Veuillez vous connecter")
