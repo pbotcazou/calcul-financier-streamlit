@@ -4,8 +4,6 @@ import streamlit_authenticator as stauth
 
 st.set_page_config(page_title="Calcul Financier", layout="wide")
 
-
-
 # Données utilisateurs
 users = {
     "primael": {"name": "Primael Botcazou", "password": "motdepasse123"},
@@ -32,14 +30,12 @@ for i, username in enumerate(usernames):
     }
 
 # Création de l'authentificateur
-cookie_expiry_days = 0.1 
-
 authenticator = stauth.Authenticate(
     credentials,
     "cookie_calcul_financier",
     "signature_key_123",
-    cookie_expiry_days=cookie_expiry_days)
-
+    cookie_expiry_days=1
+)
 authentication_status = None
 name = None 
 username = None 
