@@ -4,46 +4,29 @@ import streamlit_authenticator as stauth
 
 st.set_page_config(page_title="Calcul Financier", layout="wide")
 
+# Création des identifiants
+names = ["Primael Botcazou", "Alice Dupont"]
+usernames = ["primael", "alice"]
+# Mots de passe hashés (motdepasse123, monmdpsecret)
+hashed_passwords = [
+    "$2b$12$HxhCtuUGqYvCBvDD/z5H9O4dC5b6/v5mTmcZAp9t3V9hvx2TxC9VW",
+    "$2b$12$7w9M6DK1xGgnR8GUfN81Ze7qHmrHPYPzIMR2p4OtfozD2oy2ZqWiG"
+]
 
-
-# Données utilisateurs
-users = {
-    "primael": {"name": "Primael Botcazou", "password": "motdepasse123"},
-    "alice": {"name": "Alice Dupont", "password": "monmdpsecret"}
-}
-
-usernames = list(users.keys())
-names = [users[user]["name"] for user in usernames]
-passwords = [users[user]["password"] for user in usernames]
-
-hasher = stauth.Hasher(passwords)
-hashed_passwords = hasher.generate()
-
-
-
-
-
-# Construction des credentials avec les hashes
-credentials = {"usernames": {}}
-for i, username in enumerate(usernames):
-    credentials["usernames"][username] = {
-        "name": names[i],
-        "password": hashed_passwords[i]
+credentials = {
+    "usernames": {
+        usernames[0]: {"name": names[0], "password": hashed_passwords[0]},
+        usernames[1]: {"name": names[1], "password": hashed_passwords[1]},
     }
-
-# Création de l'authentificateur
-cookie_expiry_days = 0.1 
+}
 
 authenticator = stauth.Authenticate(
     credentials,
     "cookie_calcul_financier",
     "signature_key_123",
-    cookie_expiry_days=cookie_expiry_days)
+    cookie_expiry_days=0.1
+)
 
-authentication_status = None
-name = None 
-username = None 
-# Login sécurisést
 name, authentication_status, username = authenticator.login("main", "Connexion")
 
 
