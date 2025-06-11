@@ -30,11 +30,7 @@ authenticator = stauth.Authenticate(
 )
 
 # Login
-try:
-    name, authentication_status, username = authenticator.login("main", "Connexion")
-except Exception as e:
-    st.error("Erreur de connexion. Vérifiez vos identifiants ou la configuration.")
-    st.stop()
+name, authentication_status, username = authenticator.login("main", "Connexion")
 
 # Authentification
 if authentication_status:
@@ -145,5 +141,5 @@ if authentication_status:
 elif authentication_status is False:
     st.error("Nom d’utilisateur ou mot de passe incorrect")
 
-else:
+elif authentication_status is None:
     st.warning("Veuillez vous connecter")
