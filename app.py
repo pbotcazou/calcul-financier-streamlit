@@ -30,7 +30,8 @@ authenticator = stauth.Authenticate(
 )
 
 # Login
-name, authentication_status, username = authenticator.login("main", "Connexion")
+login(location: Literal["main", "sidebar"], label: str)
+
 
 # Authentification
 if authentication_status:
