@@ -32,9 +32,6 @@ authenticator = stauth.Authenticate(
 # Login
 name, authentication_status, username = authenticator.login("main")
 
-
-
-
 # Authentification
 if authentication_status:
     st.sidebar.success(f"Connecté : {name}")
@@ -88,7 +85,6 @@ if authentication_status:
                 res_excep = float(df.loc["Résultat exceptionnel", annee])
                 reinteg_fisc = float(df.loc["Réintégrations fiscales", annee])
                 deduc_fisc = float(df.loc["Deductions fiscales", annee])
-                partN = float(df.loc["Participation Année N", annee])
                 partN_1 = float(df.loc["Participation Année N-1", annee])
                 reduc_is = float(df.loc["Réductions IS", annee])
                 s = float(df.loc["S", annee])
@@ -96,8 +92,8 @@ if authentication_status:
             except:
                 continue
 
-            CA = fact - pca_n + pca_n_1 + enc_n - enc_n_1
-            prod_expl = CA + autre_prod
+            CA = fact - pca_n + pca_n_1
+            prod_expl = CA + autre_prod -enc_n_1 + enc_n
             VA = prod_expl - frais_gen
             EBE = VA - impots - charges_pers
             res_expl = EBE + rep_trans + autres_prod - dot_amort - autres_charges
@@ -115,11 +111,12 @@ if authentication_status:
             else:
                 interet = 0.06 * EBE
 
-            part = 0.5 * (RCAI - 0.05 * c) * (s / VA) if VA != 0 else 0
-            IS = taux_is * RCAI - reduc_is
+            B = RCAI + res_excep + reinteg_fisc - deduc_fisc - partN_1 - interet
+            IS = taux_is * B - reduc_is
+            B1 = B - IS
+
+            part = 0.5 * (B1 - 0.05 * c) * (s / VA) if VA != 0 else 0
             RCNET = RCAI + res_excep - interet - part - IS
-            B = RCAI + res_excep + reinteg_fisc - deduc_fisc + partN - partN_1 - interet
-            B1 = RCAI - IS
 
             results[annee] = {
                 "CA": CA,
@@ -133,13 +130,21 @@ if authentication_status:
                 "IS": IS,
                 "RCNET": RCNET,
                 "B": B,
-                "B1": B1,
+                "B1": B1
             }
         return pd.DataFrame(results)
 
     st.subheader("📘 Résultats Calculés")
     resultats = calculs(df, taux_is)
-    st.dataframe(resultats.style.format("{:.2f}"), use_container_width=True)
+    def format_number(x):
+        try:
+            return f"{x:,.2f}".replace(",", " ").replace(".", ",")
+        except:
+            return x
+
+    st.subheader("📘 Résultats Calculés")
+    resultats_formattes = resultats.applymap(format_number)
+    st.dataframe(resultats_formattes, use_container_width=True)
 
 elif authentication_status is False:
     st.error("Nom d’utilisateur ou mot de passe incorrect")
